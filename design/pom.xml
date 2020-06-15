@@ -7,6 +7,12 @@
     <groupId>com.lr.design</groupId>
     <artifactId>design-study-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+    </dependencies>
 
 </project>
