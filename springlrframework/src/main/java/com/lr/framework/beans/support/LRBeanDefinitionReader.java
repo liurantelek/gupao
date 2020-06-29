@@ -2,6 +2,7 @@ package com.lr.framework.beans.support;
 
 import com.lr.framework.beans.config.LRBeanDefinition;
 
+import java.beans.BeanDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +15,7 @@ public class LRBeanDefinitionReader  {
 
     private Properties config = new Properties();
 
-    private List<String> classNames = new ArrayList<String>();
+    private List<String> registerBeanClasses = new ArrayList<String>();
 
     private final String SCAN_PACKAGE = "scanPackage";
 
@@ -51,14 +52,46 @@ public class LRBeanDefinitionReader  {
                     continue;
                 }
                 String className = (scanPackage+"."+file.getName().replace(".class",""));
-                classNames.add(className);
+                registerBeanClasses.add(className);
             }
         }
 
     }
 
     public List<LRBeanDefinition> loadBeanDefinitions(){
-
+        List<LRBeanDefinition> beanDefinitions = new ArrayList<LRBeanDefinition>();
+        for(String  className : registerBeanClasses){
+            LRBeanDefinition beanDefinition = doCreateBeanDefinition(className);
+            if(beanDefinition == null){
+                continue;
+            }
+            beanDefinitions.add(beanDefinition);
+        }
         return null;
+    }
+
+    private LRBeanDefinition doCreateBeanDefinition(String className){
+        try {
+
+            Class<?> beanClass = Class.forName(className);
+            //有可能是一个借口，用它的实现类作为beanClassName
+            if(!beanClass.isInterface()){
+                LRBeanDefinition beanDefinition = new LRBeanDefinition();
+                beanDefinition.setBeanClassName(className);
+                beanDefinition.setFactoryBeanName(toLowerFirstCase(beanClass.getSimpleName()));
+                return beanDefinition;
+            }
+
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public  String toLowerFirstCase(String simpleName){
+        char[] chars = simpleName.toCharArray();
+        chars[0] += 32;
+        return String.valueOf(chars);
     }
 }

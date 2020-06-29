@@ -11,7 +11,7 @@ public class LRDefaultListableBeanFactory extends LRAbstractApplicationContext {
     /**
      * 存储注册信息的beanDefinition
      */
-    private final Map<String, LRBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String,LRBeanDefinition>(256);
+    public final Map<String, LRBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String,LRBeanDefinition>(256);
 
     @Override
     public void refresh() {

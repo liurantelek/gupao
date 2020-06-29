@@ -1,10 +1,12 @@
 package com.lr.framework.context;
 
 import com.lr.framework.beans.LRBeanFactory;
+import com.lr.framework.beans.LRBeanWrapper;
 import com.lr.framework.beans.config.LRBeanDefinition;
 import com.lr.framework.beans.support.LRBeanDefinitionReader;
 import com.lr.framework.beans.support.LRDefaultListableBeanFactory;
 
+import java.beans.beancontext.BeanContext;
 import java.util.List;
 
 public class LRApplicationContext extends LRDefaultListableBeanFactory implements LRBeanFactory {
@@ -29,12 +31,33 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     }
 
     private void doAutowired() {
+        for(String beanName : beanDefinitionMap.keySet()){
+            LRBeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
+            if(!beanDefinition.isLazyInit()){
+                getBean(beanName);
+            }
+        }
     }
 
     private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) {
+        for(LRBeanDefinition beanDefinition : beanDefinitionList){
+            super.beanDefinitionMap.put(beanDefinition.getFactoryBeanName(),beanDefinition);
+        }
     }
 
     public Object getBean(String beanName) {
+        
+        //初始化
+        instantiateBean(beanName,new LRBeanDefinition(),new LRBeanWrapper());
+        
+        populateBean(beanName,new LRBeanDefinition(),new LRBeanWrapper());
+        
         return null;
+    }
+
+    private void populateBean(String beanName, LRBeanDefinition lrBeanDefinition, LRBeanWrapper lrBeanWrapper) {
+    }
+
+    private void instantiateBean(String beanName, LRBeanDefinition lrBeanDefinition, LRBeanWrapper lrBeanWrapper) {
     }
 }
