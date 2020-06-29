@@ -1,12 +1,22 @@
 package com.lr.framework.beans;
 
+import lombok.Data;
+
 public class LRBeanWrapper {
 
-    Object getWrapperInstance(){
-        return  null;
+    private Object wrapperInstance;
+
+    private Class<?> wrapperClass;
+
+    public LRBeanWrapper(Object wrapperInstance) {
+        this.wrapperInstance = wrapperInstance;
+    }
+
+    public Object getWrapperInstance(){
+        return  wrapperInstance;
     }
 
     public Class<?> getWrapperClass(){
-        return null;
+        return this.wrapperInstance.getClass();
     }
 }
