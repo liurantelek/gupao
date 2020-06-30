@@ -1,6 +1,5 @@
 package com.lr.framework.beans;
 
-import lombok.Data;
 
 public class LRBeanWrapper {
 

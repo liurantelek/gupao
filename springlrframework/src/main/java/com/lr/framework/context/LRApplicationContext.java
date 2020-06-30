@@ -6,11 +6,13 @@ import com.lr.framework.annotion.LrService;
 import com.lr.framework.beans.LRBeanFactory;
 import com.lr.framework.beans.LRBeanWrapper;
 import com.lr.framework.beans.config.LRBeanDefinition;
+import com.lr.framework.beans.config.LrBeanPostProcessor;
 import com.lr.framework.beans.support.LRBeanDefinitionReader;
 import com.lr.framework.beans.support.LRDefaultListableBeanFactory;
 import com.sun.deploy.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +29,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
 
     public LRApplicationContext(String... configLocation){
         this.configLocations = configLocation;
+        refresh();
     }
 
     @Override
@@ -58,6 +61,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) {
         for(LRBeanDefinition beanDefinition : beanDefinitionList){
             super.beanDefinitionMap.put(beanDefinition.getFactoryBeanName(),beanDefinition);
+            super.beanDefinitionMap.put(beanDefinition.getBeanClassName(),beanDefinition);
         }
     }
 
@@ -66,20 +70,32 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     }
 
     public Object getBean(String beanName) throws Exception{
+        LRBeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
         
         //初始化
-        LRBeanWrapper beanWrapper = instantiateBean(beanName,new LRBeanDefinition());
+        Object instance = instantiateBean(beanName,beanDefinition);
+
+
+
+        LrBeanPostProcessor processor = new LrBeanPostProcessor();
+        processor.postProcessBeforeInitialization(instance,beanName);
+
+
+        LRBeanWrapper beanWrapper = new LRBeanWrapper(instance);
         this.factoryBeanInstanceCache.put(beanName,beanWrapper);
+
+        processor.postProcessAfterInitialization(instance,beanName);
+
         //注入
-        populateBean(beanName,new LRBeanDefinition(),beanWrapper);
+        populateBean(beanName,beanDefinition,beanWrapper);
         
-        return null;
+        return this.factoryBeanInstanceCache.get(beanName).getWrapperInstance();
     }
 
     private void populateBean(String beanName, LRBeanDefinition lrBeanDefinition, LRBeanWrapper lrBeanWrapper) {
         Object wrapperInstance = lrBeanWrapper.getWrapperInstance();
         //判断只有加了注解了的类才执行依赖注入
-        final Class<?> instanceClass = lrBeanWrapper.getWrapperClass();
+         Class<?> instanceClass = lrBeanWrapper.getWrapperClass();
         if(!(instanceClass.isAnnotationPresent(LrController.class) || instanceClass.isAnnotationPresent(LrService.class))){
             return;
         }
@@ -103,7 +119,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         }
     }
 
-    private LRBeanWrapper instantiateBean(String beanName, LRBeanDefinition lrBeanDefinition) {
+    private Object instantiateBean(String beanName, LRBeanDefinition lrBeanDefinition) {
         Object instance = null;
         try {
             //默认是单例模式
@@ -112,14 +128,27 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
                 instance = singletonObjects.get(beanClassName);
             }else {
                 Class<?> clazz = Class.forName(beanClassName);
-                instance = clazz.newInstance();
-                this.singletonObjects.put(beanClassName,instance);
-                this.singletonObjects.put(lrBeanDefinition.getFactoryBeanName(),instance);
+                    if(clazz.isAnnotationPresent(LrController.class)||
+                    clazz.isAnnotationPresent(LrService.class)){
+                        instance = clazz.newInstance();
+                        this.singletonObjects.put(beanClassName,instance);
+                        this.singletonObjects.put(lrBeanDefinition.getFactoryBeanName(),instance);
+                    }
+
+
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        LRBeanWrapper beanWrapper = new LRBeanWrapper(instance);
-        return beanWrapper;
+
+        return instance;
+    }
+
+    public String[] getBeanDefinitionNames(){
+        return (String[]) beanDefinitionMap.keySet().toArray();
+    }
+    public int getBeanDefinitionCount(){
+        return beanDefinitionMap.keySet().size();
     }
 }

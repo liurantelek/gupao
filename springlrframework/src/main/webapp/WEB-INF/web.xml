@@ -8,7 +8,7 @@
 
     <servlet>
         <servlet-name>lrmvc</servlet-name>
-        <servlet-class>com.lr.mvcFrameWork.v1.LrServlet</servlet-class>
+        <servlet-class>com.lr.framework.webmvc.LrDispatchServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>application.properties</param-value>

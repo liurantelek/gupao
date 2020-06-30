@@ -1,5 +1,7 @@
 package com.lr.framework.beans.support;
 
+import com.lr.framework.annotion.LrController;
+import com.lr.framework.annotion.LrService;
 import com.lr.framework.beans.config.LRBeanDefinition;
 
 import java.beans.BeanDescriptor;
@@ -20,9 +22,6 @@ public class LRBeanDefinitionReader  {
     private final String SCAN_PACKAGE = "scanPackage";
 
     public LRBeanDefinitionReader(String... locations) {
-    }
-
-    public List<LRBeanDefinition> loadBeanDefinitions(String... locations){
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(locations[0].replace("classpath:",""));
         try {
             config.load(is);
@@ -38,11 +37,11 @@ public class LRBeanDefinitionReader  {
             }
         }
         doScanner(config.getProperty(SCAN_PACKAGE));
-        return null;
     }
 
+
     private void doScanner(String scanPackage) {
-        URL url = this.getClass().getClassLoader().getResource("/"+scanPackage.replaceAll("\\.","/"));
+        URL url = this.getClass().getClassLoader().getResource(scanPackage.replaceAll("\\.","/"));
         File files = new File(url.getPath());
         for(File file : files.listFiles()){
             if(file.isDirectory()){
@@ -67,7 +66,7 @@ public class LRBeanDefinitionReader  {
             }
             beanDefinitions.add(beanDefinition);
         }
-        return null;
+        return beanDefinitions;
     }
 
     private LRBeanDefinition doCreateBeanDefinition(String className){
@@ -76,10 +75,14 @@ public class LRBeanDefinitionReader  {
             Class<?> beanClass = Class.forName(className);
             //有可能是一个借口，用它的实现类作为beanClassName
             if(!beanClass.isInterface()){
-                LRBeanDefinition beanDefinition = new LRBeanDefinition();
-                beanDefinition.setBeanClassName(className);
-                beanDefinition.setFactoryBeanName(toLowerFirstCase(beanClass.getSimpleName()));
-                return beanDefinition;
+                if(beanClass.isAnnotationPresent(LrController.class)||
+                beanClass.isAnnotationPresent(LrService.class)){
+                    LRBeanDefinition beanDefinition = new LRBeanDefinition();
+                    beanDefinition.setBeanClassName(className);
+                    beanDefinition.setFactoryBeanName(toLowerFirstCase(beanClass.getSimpleName()));
+                    return beanDefinition;
+                }
+
             }
 
 
