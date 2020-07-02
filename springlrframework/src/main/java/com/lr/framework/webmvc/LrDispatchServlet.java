@@ -1,8 +1,11 @@
 package com.lr.framework.webmvc;
 
 import com.lr.framework.annotion.LrController;
+import com.lr.framework.annotion.LrRequestMapping;
 import com.lr.framework.context.LRApplicationContext;
+import com.lr.framework.webmvc.servlet.LrHandlerAdapter;
 import com.lr.framework.webmvc.servlet.LrHandlerMapping;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -12,7 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @version v1.0
@@ -22,9 +28,14 @@ import java.util.List;
  * @Author: 刘然
  * @Date: 2020/6/30 19:25
  */
+@Slf4j
 public class LrDispatchServlet extends HttpServlet {
 
     private LRApplicationContext context;
+
+    private List<LrHandlerMapping> handleMappings = new ArrayList<LrHandlerMapping> ();
+
+    private Map<LrHandlerMapping, LrHandlerAdapter> handlerAdapter = new HashMap<LrHandlerMapping,LrHandlerAdapter>();
 
     private List<LrHandlerMapping> handlerMappings = new ArrayList<LrHandlerMapping>();
 
@@ -59,6 +70,7 @@ public class LrDispatchServlet extends HttpServlet {
         initLocalResolver(context);
         //初始化模板处理器
         initThemeResolver(context);
+        //handlermapping
         initHandlerMappings(context);
         //初始话参数适配器
         initHandlerAdapters(context);
@@ -78,9 +90,25 @@ public class LrDispatchServlet extends HttpServlet {
             try {
                 Object bean = context.getBean(beanName);
                 Class<?> clazz = bean.getClass();
-                if(clazz.isAnnotationPresent(LrController.class)){
-                    Method[] methods = clazz.getMethods();
+                if(!clazz.isAnnotationPresent(LrController.class)){
+                   continue;
                 }
+                String baseUrl = "";
+                if(clazz.isAnnotationPresent (LrRequestMapping.class)){
+                    LrRequestMapping requestMapping = clazz.getAnnotation (LrRequestMapping.class);
+                    baseUrl = requestMapping.value ();
+                }
+                for(Method m : clazz.getMethods ()){
+                    if(!m.isAnnotationPresent (LrRequestMapping.class)){
+                        continue;
+                    }
+                    LrRequestMapping requestMapping = m.getAnnotation (LrRequestMapping.class);
+                    String regex = ("/"+baseUrl + "/"+requestMapping.value ().replaceAll("\\*",".*")).replaceAll ("/+","/");
+                    Pattern pattern = Pattern.compile(regex);
+                    handleMappings.add (new LrHandlerMapping (pattern,bean,m));
+                    log.info("mapped:"+regex);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -103,6 +131,11 @@ public class LrDispatchServlet extends HttpServlet {
     }
 
     private void initHandlerAdapters(LRApplicationContext context) {
+        //把一个request请求变成一个handler，参数都是字符串的，自动配置到handler的形参
+        //只有拿到handermapping才能进行操作
+        for(LrHandlerMapping handlerMapping : handleMappings){
+
+        }
     }
 
     private void initThemeResolver(LRApplicationContext context) {

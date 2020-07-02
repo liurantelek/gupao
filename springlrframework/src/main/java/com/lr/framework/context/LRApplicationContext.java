@@ -146,7 +146,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     }
 
     public String[] getBeanDefinitionNames(){
-        return (String[]) beanDefinitionMap.keySet().toArray();
+        return beanDefinitionMap.keySet().toArray(new String[beanDefinitionMap.size()]);
     }
     public int getBeanDefinitionCount(){
         return beanDefinitionMap.keySet().size();

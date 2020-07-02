@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * @version v1.0
  * @ProjectName: gupao
  * @ClassName: LrHandlerMapping
- * @Description: TODO(一句话描述该类的功能)
+ * @Description:
  * @Author: 刘然
  * @Date: 2020/6/30 20:26
  */
@@ -18,15 +18,18 @@ public class LrHandlerMapping {
 
 
 
-    public LrHandlerMapping(Object controller, Method method, Pattern pattern) {
+    public LrHandlerMapping(Pattern pattern,Object controller, Method method) {
         this.controller = controller;
         this.method = method;
         this.pattern = pattern;
     }
 
+    //保存方法的对应实例
     private Object controller;
 
+    //保存映射的方法
     private Method method;
 
-    private Pattern pattern; //url的正则匹配
+    //url的正则匹配
+    private Pattern pattern;
 }

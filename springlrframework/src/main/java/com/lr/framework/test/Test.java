@@ -14,15 +14,22 @@ import com.lr.framework.controller.TestController;
 public class Test {
 
     public static void main(String[] args) {
-        LRApplicationContext applicationContext = new LRApplicationContext("classpath:application.properties");
-
+//        LRApplicationContext applicationContext = new LRApplicationContext("classpath:application.properties");
+//
+//        try {
+//            Object bean = applicationContext.getBean(TestController.class);
+//            System.out.println(bean);
+//            TestController controller = (TestController) bean;
+//            controller.test();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        long t1 = System.currentTimeMillis();
         try {
-            Object bean = applicationContext.getBean(TestController.class);
-            System.out.println(bean);
-            TestController controller = (TestController) bean;
-            controller.test();
-        } catch (Exception e) {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println(System.currentTimeMillis()-t1);
     }
 }
