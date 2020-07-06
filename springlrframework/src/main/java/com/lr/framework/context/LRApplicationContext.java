@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LRApplicationContext extends LRDefaultListableBeanFactory implements LRBeanFactory {
@@ -27,6 +28,8 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     //通用的ioc的容器
     private Map<String,LRBeanWrapper> factoryBeanInstanceCache = new ConcurrentHashMap<String, LRBeanWrapper>();
 
+    LRBeanDefinitionReader reader;
+
     public LRApplicationContext(String... configLocation){
         this.configLocations = configLocation;
         refresh();
@@ -35,7 +38,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     @Override
     public void refresh() {
         //1、定位
-        LRBeanDefinitionReader reader = new LRBeanDefinitionReader(this.configLocations);
+        reader= new LRBeanDefinitionReader(this.configLocations);
         //2、加载配置文件，扫描相关的类，把他们封装成beanDefinition
         List<LRBeanDefinition> beanDefinitionList = reader.loadBeanDefinitions();
         //3、注册，把配置信息放到容器里面
@@ -150,5 +153,9 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
     }
     public int getBeanDefinitionCount(){
         return beanDefinitionMap.keySet().size();
+    }
+
+    public Properties getConfig(){
+       return this.reader.getConfig();
     }
 }

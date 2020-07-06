@@ -5,6 +5,8 @@ import com.lr.framework.annotion.LrRequestMapping;
 import com.lr.framework.context.LRApplicationContext;
 import com.lr.framework.webmvc.servlet.LrHandlerAdapter;
 import com.lr.framework.webmvc.servlet.LrHandlerMapping;
+import com.lr.framework.webmvc.servlet.LrModelAndView;
+import com.lr.framework.webmvc.servlet.LrVierResolver;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletConfig;
@@ -12,12 +14,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -41,6 +42,8 @@ public class LrDispatchServlet extends HttpServlet {
 
     private final String CONTEXT_CONFIG_LOCATION = "contextConfigLocation";
 
+    List<LrVierResolver> viewResovlers = new ArrayList<LrVierResolver>();
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req, resp);
@@ -48,10 +51,61 @@ public class LrDispatchServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.doDispatch(req,resp);
+        try {
+            this.doDispatch(req,resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) {
+    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        LrHandlerMapping handler = getHandler(req);
+        if(handler == null){
+            //返回404界面
+            return ;
+        }
+
+        LrHandlerAdapter handlerAdapter = getHandlerAdapter(handler);
+
+        //真正的调用方法
+        LrModelAndView modelAndView = handlerAdapter.handle(req,resp,handler);
+
+        processDispatchResult(req,resp,modelAndView);
+    }
+
+    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, LrModelAndView modelAndView) {
+        //将modevandview转化成html outputstream 或者json或者freemark veolcity
+        //contexttype
+        if(null == modelAndView){
+            return;
+        }
+    }
+
+    private LrHandlerAdapter getHandlerAdapter(LrHandlerMapping handler) {
+        if(this.handlerAdapter.isEmpty()){
+            return null;
+        }
+        LrHandlerAdapter handlerAdapter = this.handlerAdapter.get(handler);
+        if(handlerAdapter.support(handler)){
+            return handlerAdapter;
+        }
+        return null;
+    }
+
+    private LrHandlerMapping getHandler(HttpServletRequest req){
+        if(handleMappings.isEmpty()){
+            return null;
+        }
+        String url = req.getRequestURI();
+        String contextPath = req.getContextPath();
+        url = url.replace(contextPath,"").replaceAll("/+","/");
+        for(LrHandlerMapping handlerMapping : handleMappings){
+            Matcher matcher = handlerMapping.getPattern().matcher(url);
+            if(matcher.matches()){
+               return handlerMapping;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -119,7 +173,13 @@ public class LrDispatchServlet extends HttpServlet {
     }
 
     private void initViewResolvers(LRApplicationContext context) {
-        
+        String templateRoot = context.getConfig().getProperty("templateRoot");
+        String fileRootPath = this.getClass().getClassLoader().getResource(templateRoot).getFile();
+        File templateRootDir = new File(fileRootPath);
+        for(File file : templateRootDir.listFiles()){
+            this.viewResovlers.add(new LrVierResolver(templateRoot));
+        }
+
     }
 
     private void initRequestToViewTranslator(LRApplicationContext context) {
@@ -147,4 +207,6 @@ public class LrDispatchServlet extends HttpServlet {
     private void initMultipartResolver(LRApplicationContext context) {
         
     }
+
+   
 }
