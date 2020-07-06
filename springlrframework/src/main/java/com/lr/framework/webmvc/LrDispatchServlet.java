@@ -3,10 +3,7 @@ package com.lr.framework.webmvc;
 import com.lr.framework.annotion.LrController;
 import com.lr.framework.annotion.LrRequestMapping;
 import com.lr.framework.context.LRApplicationContext;
-import com.lr.framework.webmvc.servlet.LrHandlerAdapter;
-import com.lr.framework.webmvc.servlet.LrHandlerMapping;
-import com.lr.framework.webmvc.servlet.LrModelAndView;
-import com.lr.framework.webmvc.servlet.LrVierResolver;
+import com.lr.framework.webmvc.servlet.*;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletConfig;
@@ -62,7 +59,7 @@ public class LrDispatchServlet extends HttpServlet {
         LrHandlerMapping handler = getHandler(req);
         if(handler == null){
             //返回404界面
-            return ;
+             processDispatchResult(req,resp,new LrModelAndView("404"));
         }
 
         LrHandlerAdapter handlerAdapter = getHandlerAdapter(handler);
@@ -78,6 +75,17 @@ public class LrDispatchServlet extends HttpServlet {
         //contexttype
         if(null == modelAndView){
             return;
+        }
+        if(this.viewResovlers.isEmpty()){
+            return;
+        }
+        for(LrVierResolver vierResolver: viewResovlers){
+            try {
+                LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
+                view.render(modelAndView.getModel(),req,resp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

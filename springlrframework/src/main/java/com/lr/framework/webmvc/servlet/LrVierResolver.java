@@ -1,5 +1,7 @@
 package com.lr.framework.webmvc.servlet;
 
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Locale;
 
 /**
@@ -12,12 +14,24 @@ import java.util.Locale;
  */
 public class LrVierResolver {
 
+    private final String DEFAULT_TEMPLATE_SUFFIX = ".html";
+
+    private File templateRootDir ;
 
     public LrVierResolver(String templateRoot) {
-
+        String templateRootPath = this.getClass().getClassLoader().getResource(templateRoot).getFile();
+         templateRootDir = new File(templateRootPath);
     }
 
     public LrView resolvewName(String viewName, Locale locale)throws Exception{
-        return null;
+
+        if(viewName == null||"".equals(viewName)){
+            return null;
+        }
+        viewName = viewName.endsWith(DEFAULT_TEMPLATE_SUFFIX)?viewName:viewName+DEFAULT_TEMPLATE_SUFFIX;
+
+        File templateFile = new File((templateRootDir.getPath() + "/" + viewName).replaceAll("/+", "/"));
+
+        return new LrView(templateFile);
     }
 }
