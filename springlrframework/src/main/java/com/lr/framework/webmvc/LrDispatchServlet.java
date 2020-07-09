@@ -60,6 +60,7 @@ public class LrDispatchServlet extends HttpServlet {
         if(handler == null){
             //返回404界面
              processDispatchResult(req,resp,new LrModelAndView("404"));
+             return;
         }
 
         LrHandlerAdapter handlerAdapter = getHandlerAdapter(handler);
@@ -83,6 +84,7 @@ public class LrDispatchServlet extends HttpServlet {
             try {
                 LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
                 view.render(modelAndView.getModel(),req,resp);
+                return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -202,7 +204,7 @@ public class LrDispatchServlet extends HttpServlet {
         //把一个request请求变成一个handler，参数都是字符串的，自动配置到handler的形参
         //只有拿到handermapping才能进行操作
         for(LrHandlerMapping handlerMapping : handleMappings){
-
+            this.handlerAdapter.put(handlerMapping,new LrHandlerAdapter());
         }
     }
 

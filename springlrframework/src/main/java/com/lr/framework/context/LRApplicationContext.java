@@ -9,7 +9,7 @@ import com.lr.framework.beans.config.LRBeanDefinition;
 import com.lr.framework.beans.config.LrBeanPostProcessor;
 import com.lr.framework.beans.support.LRBeanDefinitionReader;
 import com.lr.framework.beans.support.LRDefaultListableBeanFactory;
-import com.sun.deploy.util.StringUtils;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -35,6 +35,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         refresh();
     }
 
+    @SneakyThrows
     @Override
     public void refresh() {
         //1、定位
@@ -61,10 +62,12 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         }
     }
 
-    private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) {
+    private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) throws Exception {
         for(LRBeanDefinition beanDefinition : beanDefinitionList){
+            if(super.beanDefinitionMap.containsKey(beanDefinition.getFactoryBeanName())){
+                throw new Exception("The “" + beanDefinition.getFactoryBeanName() + "” is exists!!");
+            }
             super.beanDefinitionMap.put(beanDefinition.getFactoryBeanName(),beanDefinition);
-            super.beanDefinitionMap.put(beanDefinition.getBeanClassName(),beanDefinition);
         }
     }
 
@@ -74,15 +77,11 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
 
     public Object getBean(String beanName) throws Exception{
         LRBeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
-        
-        //初始化
-        Object instance = instantiateBean(beanName,beanDefinition);
-
-
-
+        Object instance = null;
         LrBeanPostProcessor processor = new LrBeanPostProcessor();
         processor.postProcessBeforeInitialization(instance,beanName);
-
+        //初始化
+         instance = instantiateBean(beanName,beanDefinition);
 
         LRBeanWrapper beanWrapper = new LRBeanWrapper(instance);
         this.factoryBeanInstanceCache.put(beanName,beanWrapper);
@@ -114,6 +113,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
                 }
                 field.setAccessible(true);
                 try {
+                    if(this.factoryBeanInstanceCache.get(autowiredName) == null){ continue; }
                     field.set(wrapperInstance,this.factoryBeanInstanceCache.get(autowiredName).getWrapperInstance());
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
