@@ -13,4 +13,13 @@ import com.lr.framework.service.TestService;
  */
 @LrService("testService")
 public class TestServiceImpl implements TestService {
+    public String testService(String name, String addr) {
+        System.out.println("serviceImpl");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return name+addr;
+    }
 }

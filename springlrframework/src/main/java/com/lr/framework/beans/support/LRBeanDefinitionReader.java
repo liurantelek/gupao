@@ -68,7 +68,7 @@ public class LRBeanDefinitionReader  {
                 if(clazz.isAnnotationPresent(LrController.class)|| clazz.isAnnotationPresent(LrService.class)){
                     beanDefinitions.add(doCreateBeanDefinition(toLowerFirstCase(clazz.getSimpleName()),clazz.getName()));
                     for(Class<?> i :clazz.getInterfaces()){
-                        beanDefinitions.add(doCreateBeanDefinition(i.getSimpleName(),clazz.getName()));
+                        beanDefinitions.add(doCreateBeanDefinition(toLowerFirstCase(i.getSimpleName()),clazz.getName()));
                     }
                 }
 

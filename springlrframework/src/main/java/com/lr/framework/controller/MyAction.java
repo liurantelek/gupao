@@ -27,6 +27,6 @@ public class MyAction {
         Map<String,Object> row = new HashMap<String, Object>();
         row.put("detail","这是detail");
         System.out.println(11111);
-        return new LrModelAndView("500",row);
+        return new LrModelAndView("first",row);
     }
 }
