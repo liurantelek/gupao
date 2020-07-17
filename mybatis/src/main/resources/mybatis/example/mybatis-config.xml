@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+
+<properties resource="resource/application.properties">
+    <property name="username" value="${username}"></property>
+    <property name="password" value="${password}"></property>
+</properties>
+    <settings>
+        <!--全局性的开启或者关闭映射器配置文件中的已配置的任何缓存 默认值true-->
+        <setting name="cacheEnabled" value="true"/>
+        <!--延时加载的全局开关，当开启时所有关联对象都会延时加载，特定管理关系中通过设置fetchType属性来覆盖该项的开关状态 默认false -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--开启时，任一方法的调用都会加载该对象的所有延迟加载属性。 否则，每个延迟加载属性会按需加载（参考 lazyLoadTriggerMethods) false （在 3.4.1 及之前的版本中默认为 true）-->
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        <!--	是否允许单个语句返回多结果集（需要数据库驱动支持）。 	默认true-->
+        <setting name="useColumnLabel" value="true"/>
+        <!--	使用列标签代替列名。实际表现依赖于数据库驱动，具体可参考数据库驱动的相关文档，或通过对比测试来观察。 默认true-->
+        <setting name="useGeneratedKeys" value="false"/>
+        <!--允许 JDBC 支持自动生成主键，需要数据库驱动支持。如果设置为 true，将强制使用自动生成主键。尽管一些数据库驱动不支持此特性，但仍可正常工作（如 Derby） true-->
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <!--指定 MyBatis 应如何自动映射列到字段或属性。 NONE 表示关闭自动映射；PARTIAL 只会自动映射没有定义嵌套结果映射的字段。 FULL 会自动映射任何复杂的结果集（无论是否嵌套）。默认PARTIAL-->
+        <setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+        <!--指定发现自动映射目标未知列（或未知属性类型）的行为。NONE: 不做任何反应
+WARNING: 输出警告日志（'org.apache.ibatis.session.AutoMappingUnknownColumnBehavior' 的日志等级必须设置为 WARN）
+FAILING: 映射失败 (抛出 SqlSessionException) 默认none-->
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        <!---->
+        <setting name="defaultStatementTimeout" value="25"/>
+        <!---->
+        <setting name="defaultFetchSize" value="100"/>
+        <!---->
+        <setting name="safeRowBoundsEnabled" value="false"/>
+        <!---->
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+        <!---->
+        <setting name="localCacheScope" value="SESSION"/>
+        <!---->
+        <setting name="jdbcTypeForNull" value="OTHER"/>
+        <!---->
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+    </settings>
+
+    <!--类型别名可为 Java 类型设置一个缩写名字。 它仅用于 XML 配置，意在降低冗余的全限定类名书写。例如：-->
+    <typeAliases>
+        <typeAlias alias="blog" type="demo.mapper.Blog"></typeAlias>
+    </typeAliases>
+    <typeHandlers>
+        <typeHandler handler="demo.type.ExcempleTypeHandler"></typeHandler>
+    </typeHandlers>
+    <objectFactory type=""></objectFactory>
+    <plugins>
+        <plugin interceptor=""></plugin>
+    </plugins>
+    <environments default="development">
+    <environment id="development">
+    <transactionManager type="JDBC"/>
+    <dataSource type="POOLED">
+    <property name="driver" value="${driver}"/>
+    <property name="url" value="${url}"/>
+    <property name="username" value="${username}"/>
+    <property name="password" value="${password}"/>
+    </dataSource>
+    </environment>
+    </environments>
+    <mappers>
+        <!-- 使用相对于类路径的资源引用 -->
+        <mapper resource="mybatis/example/BlogMapper.xml"/>
+        <mapper url="file:///"></mapper>
+        <mapper class="demo.mapper.BlogMapper"></mapper>
+        <!-- 将包内的映射器接口实现全部注册为映射器 -->
+        <package name="demo.mapper"></package>
+    </mappers>
+</configuration>
+
