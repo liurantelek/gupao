@@ -1,5 +1,6 @@
 package com.lr.framework.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.lr.framework.annotion.LrAutowired;
 import com.lr.framework.annotion.LrController;
 import com.lr.framework.annotion.LrRequestMapping;
@@ -32,10 +33,19 @@ public class TestController {
                                @LrRequestParam("name") String name, @LrRequestParam("addr") String addr){
         System.out.println(testService);
         String resutl = testService.testService(name,addr);
-
         Map<String,Object> rows = new HashMap<String,Object>();
         rows.put("detail",resutl);
         LrModelAndView modelAndView = new LrModelAndView("first",rows);
         return modelAndView;
+    }
+
+    @LrRequestMapping("/test2")
+    public String test2(HttpServletRequest request, HttpServletResponse response,
+                               @LrRequestParam("name") String name, @LrRequestParam("addr") String addr){
+        System.out.println(testService);
+        String resutl = testService.testService(name,addr);
+        Map<String,Object> rows = new HashMap<String,Object>();
+        rows.put("detail",resutl);
+        return JSON.toJSONString(rows);
     }
 }
