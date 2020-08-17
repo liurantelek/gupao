@@ -24,7 +24,7 @@ public class LrHandlerAdapter {
         return  handler instanceof LrHandlerMapping;
     };
 
-    public LrModelAndView handle(HttpServletRequest request, HttpServletResponse response,Object handler)throws Exception{
+    public Object handle(HttpServletRequest request, HttpServletResponse response,Object handler)throws Exception{
         LrHandlerMapping handlerMapping = (LrHandlerMapping) handler;
 
         //把方法的参数列表和request的参数列表按照顺序一一对应
@@ -76,12 +76,7 @@ public class LrHandlerAdapter {
         if(result == null ){
             return null;
         }
-        //modelAndView
-        boolean isModelAndView = handlerMapping.getMethod().getReturnType() == LrModelAndView.class;
-        if(isModelAndView){
-            return (LrModelAndView) result;}
-
-        return null;
+        return result;
     }
 
     private Object caseStringValue(Class<?> paramType, String value) {

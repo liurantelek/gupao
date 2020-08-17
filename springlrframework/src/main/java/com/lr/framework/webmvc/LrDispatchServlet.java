@@ -66,29 +66,41 @@ public class LrDispatchServlet extends HttpServlet {
         LrHandlerAdapter handlerAdapter = getHandlerAdapter(handler);
 
         //真正的调用方法
-        LrModelAndView modelAndView = handlerAdapter.handle(req,resp,handler);
+        Object result = handlerAdapter.handle(req,resp,handler);
 
-        processDispatchResult(req,resp,modelAndView);
+        processDispatchResult(req,resp,result);
     }
 
-    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, LrModelAndView modelAndView) {
+    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, Object result) {
         //将modevandview转化成html outputstream 或者json或者freemark veolcity
         //contexttype
-        if(null == modelAndView){
+        if(null == result){
             return;
         }
-        if(this.viewResovlers.isEmpty()){
-            return;
-        }
-        for(LrVierResolver vierResolver: viewResovlers){
-            try {
-                LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
-                view.render(modelAndView.getModel(),req,resp);
+        if(result instanceof LrModelAndView){
+            if(this.viewResovlers.isEmpty()){
                 return;
-            } catch (Exception e) {
+            }
+            LrModelAndView modelAndView = (LrModelAndView) result;
+            for(LrVierResolver vierResolver: viewResovlers){
+                try {
+                    LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
+                    view.render(modelAndView.getModel(),req,resp);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }else if(result instanceof String){
+            try {
+                resp.setCharacterEncoding("utf-8");
+                resp.setContentType("text/html;charset=utf-8");
+                resp.getWriter().write(result.toString());
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     private LrHandlerAdapter getHandlerAdapter(LrHandlerMapping handler) {
