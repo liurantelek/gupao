@@ -60,33 +60,47 @@ public class LrDispatchServlet extends HttpServlet {
         if(handler == null){
             //返回404界面
              processDispatchResult(req,resp,new LrModelAndView("404"));
+             return;
         }
 
         LrHandlerAdapter handlerAdapter = getHandlerAdapter(handler);
 
         //真正的调用方法
-        LrModelAndView modelAndView = handlerAdapter.handle(req,resp,handler);
+        Object result = handlerAdapter.handle(req,resp,handler);
 
-        processDispatchResult(req,resp,modelAndView);
+        processDispatchResult(req,resp,result);
     }
 
-    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, LrModelAndView modelAndView) {
+    private void processDispatchResult(HttpServletRequest req, HttpServletResponse resp, Object result) {
         //将modevandview转化成html outputstream 或者json或者freemark veolcity
         //contexttype
-        if(null == modelAndView){
+        if(null == result){
             return;
         }
-        if(this.viewResovlers.isEmpty()){
-            return;
-        }
-        for(LrVierResolver vierResolver: viewResovlers){
+        if(result instanceof LrModelAndView){
+            if(this.viewResovlers.isEmpty()){
+                return;
+            }
+            LrModelAndView modelAndView = (LrModelAndView) result;
+            for(LrVierResolver vierResolver: viewResovlers){
+                try {
+                    LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
+                    view.render(modelAndView.getModel(),req,resp);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }else if(result instanceof String){
             try {
-                LrView view = vierResolver.resolvewName(modelAndView.getViewName(), null);
-                view.render(modelAndView.getModel(),req,resp);
-            } catch (Exception e) {
+                resp.setCharacterEncoding("utf-8");
+                resp.setContentType("text/html;charset=utf-8");
+                resp.getWriter().write(result.toString());
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     private LrHandlerAdapter getHandlerAdapter(LrHandlerMapping handler) {
@@ -202,7 +216,7 @@ public class LrDispatchServlet extends HttpServlet {
         //把一个request请求变成一个handler，参数都是字符串的，自动配置到handler的形参
         //只有拿到handermapping才能进行操作
         for(LrHandlerMapping handlerMapping : handleMappings){
-
+            this.handlerAdapter.put(handlerMapping,new LrHandlerAdapter());
         }
     }
 

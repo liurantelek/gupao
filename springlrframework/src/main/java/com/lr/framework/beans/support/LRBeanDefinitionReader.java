@@ -60,36 +60,32 @@ public class LRBeanDefinitionReader  {
     public List<LRBeanDefinition> loadBeanDefinitions(){
         List<LRBeanDefinition> beanDefinitions = new ArrayList<LRBeanDefinition>();
         for(String  className : registerBeanClasses){
-            LRBeanDefinition beanDefinition = doCreateBeanDefinition(className);
-            if(beanDefinition == null){
-                continue;
+            try {
+                Class<?> clazz = Class.forName(className);
+                if(clazz.isInterface()){
+                    continue;
+                }
+                if(clazz.isAnnotationPresent(LrController.class)|| clazz.isAnnotationPresent(LrService.class)){
+                    beanDefinitions.add(doCreateBeanDefinition(toLowerFirstCase(clazz.getSimpleName()),clazz.getName()));
+                    for(Class<?> i :clazz.getInterfaces()){
+                        beanDefinitions.add(doCreateBeanDefinition(toLowerFirstCase(i.getSimpleName()),clazz.getName()));
+                    }
+                }
+
+            } catch (ClassNotFoundException e) {
+
+
             }
-            beanDefinitions.add(beanDefinition);
+
         }
         return beanDefinitions;
     }
 
-    private LRBeanDefinition doCreateBeanDefinition(String className){
-        try {
-
-            Class<?> beanClass = Class.forName(className);
-            //有可能是一个借口，用它的实现类作为beanClassName
-            if(!beanClass.isInterface()){
-                if(beanClass.isAnnotationPresent(LrController.class)||
-                beanClass.isAnnotationPresent(LrService.class)){
-                    LRBeanDefinition beanDefinition = new LRBeanDefinition();
-                    beanDefinition.setBeanClassName(className);
-                    beanDefinition.setFactoryBeanName(toLowerFirstCase(beanClass.getSimpleName()));
-                    return beanDefinition;
-                }
-
-            }
-
-
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private LRBeanDefinition doCreateBeanDefinition(String factoryBeanName,String beanClassName){
+        LRBeanDefinition beanDefinition = new LRBeanDefinition();
+        beanDefinition.setFactoryBeanName(factoryBeanName);
+        beanDefinition.setBeanClassName(beanClassName);
+        return beanDefinition;
     }
 
     public  String toLowerFirstCase(String simpleName){

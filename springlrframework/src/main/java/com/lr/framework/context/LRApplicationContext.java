@@ -3,13 +3,18 @@ package com.lr.framework.context;
 import com.lr.framework.annotion.LrAutowired;
 import com.lr.framework.annotion.LrController;
 import com.lr.framework.annotion.LrService;
+import com.lr.framework.aop.LRAopProxy;
+import com.lr.framework.aop.LrCglibAopProxy;
+import com.lr.framework.aop.LrJDKDynamicAopProxy;
+import com.lr.framework.aop.config.LRAopConfig;
+import com.lr.framework.aop.support.LrAdvicedSupport;
 import com.lr.framework.beans.LRBeanFactory;
 import com.lr.framework.beans.LRBeanWrapper;
 import com.lr.framework.beans.config.LRBeanDefinition;
 import com.lr.framework.beans.config.LrBeanPostProcessor;
 import com.lr.framework.beans.support.LRBeanDefinitionReader;
 import com.lr.framework.beans.support.LRDefaultListableBeanFactory;
-import com.sun.deploy.util.StringUtils;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -35,6 +40,7 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         refresh();
     }
 
+    @SneakyThrows
     @Override
     public void refresh() {
         //1、定位
@@ -61,10 +67,12 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         }
     }
 
-    private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) {
+    private void doRegisterBeanDefinition(List<LRBeanDefinition> beanDefinitionList) throws Exception {
         for(LRBeanDefinition beanDefinition : beanDefinitionList){
+            if(super.beanDefinitionMap.containsKey(beanDefinition.getFactoryBeanName())){
+                throw new Exception("The “" + beanDefinition.getFactoryBeanName() + "” is exists!!");
+            }
             super.beanDefinitionMap.put(beanDefinition.getFactoryBeanName(),beanDefinition);
-            super.beanDefinitionMap.put(beanDefinition.getBeanClassName(),beanDefinition);
         }
     }
 
@@ -74,16 +82,13 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
 
     public Object getBean(String beanName) throws Exception{
         LRBeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
-        
-        //初始化
-        Object instance = instantiateBean(beanName,beanDefinition);
-
-
-
+        Object instance = null;
         LrBeanPostProcessor processor = new LrBeanPostProcessor();
         processor.postProcessBeforeInitialization(instance,beanName);
+        //初始化
+         instance = instantiateBean(beanName,beanDefinition);
 
-
+         //创建一个代理对象，使用cglib的还是jdk的
         LRBeanWrapper beanWrapper = new LRBeanWrapper(instance);
         this.factoryBeanInstanceCache.put(beanName,beanWrapper);
 
@@ -110,10 +115,17 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
                 LrAutowired autowired = field.getAnnotation(LrAutowired.class);
                 String autowiredName = autowired.value().trim();
                 if("".equals(autowiredName)){
-                    autowiredName = field.getType().getName();
+                    autowiredName = reader.toLowerFirstCase(field.getType().getSimpleName());
                 }
                 field.setAccessible(true);
                 try {
+                    if(this.factoryBeanInstanceCache.get(autowiredName) == null){
+                        try {
+                            getBean(autowiredName);
+                        } catch (Exception e) {
+
+                        }
+                    }
                     field.set(wrapperInstance,this.factoryBeanInstanceCache.get(autowiredName).getWrapperInstance());
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -131,9 +143,16 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
                 instance = singletonObjects.get(beanClassName);
             }else {
                 Class<?> clazz = Class.forName(beanClassName);
+                instance = clazz.newInstance();
+                LrAdvicedSupport config = instantionAopConfig(lrBeanDefinition);
+                config.setTargetClass(clazz);
+                config.setTarget(instance);
+                //如果符合创建一个代理对象
+               if(config.pointCutMatch()){
+                   instance = createProxy(config).getProxy();
+               }
                     if(clazz.isAnnotationPresent(LrController.class)||
                     clazz.isAnnotationPresent(LrService.class)){
-                        instance = clazz.newInstance();
                         this.singletonObjects.put(beanClassName,instance);
                         this.singletonObjects.put(lrBeanDefinition.getFactoryBeanName(),instance);
                     }
@@ -146,6 +165,32 @@ public class LRApplicationContext extends LRDefaultListableBeanFactory implement
         }
 
         return instance;
+    }
+
+    private LRAopProxy createProxy(LrAdvicedSupport config) {
+        Class<?> targetClass = config.getTargetClass();
+        //如果有接口创建jdk的动态代理，否则创界cglib的
+        if(targetClass.getInterfaces().length>0){
+            return new LrJDKDynamicAopProxy(config);
+        }else {
+            return new LrCglibAopProxy(config);
+        }
+    }
+
+    /**
+     *
+     * @param lrBeanDefinition
+     * @return
+     */
+    private LrAdvicedSupport instantionAopConfig(LRBeanDefinition lrBeanDefinition) {
+        LRAopConfig config = new LRAopConfig();
+        config.setPointCut(this.reader.getConfig().getProperty("pointCut"));
+        config.setApsectClass(this.reader.getConfig().getProperty("apsectClass"));
+        config.setAspectBefore(this.reader.getConfig().getProperty("aspectBefore"));
+        config.setAspectAfter(this.reader.getConfig().getProperty("aspectAfter"));
+        config.setAspectAfterThrow(this.reader.getConfig().getProperty("aspectAfterThrow"));
+        config.setAspectAfterThrowingName(this.reader.getConfig().getProperty("aspectAfterThrowingName"));
+        return new LrAdvicedSupport(config);
     }
 
     public String[] getBeanDefinitionNames(){

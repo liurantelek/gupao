@@ -14,25 +14,88 @@
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+            <version>3.1.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <version>3.1.14</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.13</version>
+        </dependency>
     </dependencies>
+    <!--<build>-->
+        <!--<plugins>-->
+            <!--&lt;!&ndash;<plugin>&ndash;&gt;-->
+                <!--&lt;!&ndash;<groupId>org.mortbay.jetty</groupId>&ndash;&gt;-->
+                <!--&lt;!&ndash;<artifactId>jetty-maven-plugin</artifactId>&ndash;&gt;-->
+                <!--&lt;!&ndash;<version>8.1.16.v20140903</version>&ndash;&gt;-->
+                <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<scanIntervalSeconds>3</scanIntervalSeconds>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<contextPath>/*</contextPath>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<connectors>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">&ndash;&gt;-->
+                            <!--&lt;!&ndash;<port>8082</port>&ndash;&gt;-->
+                        <!--&lt;!&ndash;</connector>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</connectors>&ndash;&gt;-->
+                <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
+            <!--&lt;!&ndash;</plugin>&ndash;&gt;-->
+        <!--</plugins>-->
+    <!--</build>-->
+
     <build>
         <plugins>
+            <!-- 打包配置插件 -->
             <plugin>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>8.1.16.v20140903</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
                 <configuration>
-                    <webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
-                    <scanIntervalSeconds>3</scanIntervalSeconds>
-                    <contextPath>/*</contextPath>
-                    <connectors>
-                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                            <port>8082</port>
-                        </connector>
-                    </connectors>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>com.lr.mvcFrameWork.v1.ClientTest</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
+            </plugin>
+            <!-- 打包复制lib文件插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <skipSource>true</skipSource><!-- ignore sources when packaging -->
+                </configuration>
+
             </plugin>
         </plugins>
     </build>
+
 
 </project>

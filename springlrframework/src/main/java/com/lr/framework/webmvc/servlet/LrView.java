@@ -1,6 +1,5 @@
 package com.lr.framework.webmvc.servlet;
 
-import com.sun.istack.internal.Nullable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,22 +27,26 @@ public class LrView {
     this.viewFile = file;
     }
 
-    public void render(@Nullable Map<String,?> model, HttpServletRequest req, HttpServletResponse resp) throws Exception{
+    public void render( Map<String,?> model, HttpServletRequest req, HttpServletResponse resp) throws Exception{
 
         StringBuffer sb = new StringBuffer();
 
         RandomAccessFile ra = new RandomAccessFile(this.viewFile,"r");
        String line = null;
+        Pattern pattern = Pattern.compile("￥\\{[^\\}]+\\}",Pattern.CASE_INSENSITIVE);
         while (null!=(line = ra.readLine())){
             line = new String(line.getBytes("ISO-8859-1"),"utf-8");
-            Pattern pattern = Pattern.compile("￥\\{[^\\}]+\\}",Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(line);
             while (matcher.find()){
                 String paramName = matcher.group();
                 paramName = paramName.replaceAll("￥\\{|\\}", "");
+
                 Object paramValue = model.get(paramName);
-                line = matcher.replaceFirst(paramValue.toString());
-                matcher = pattern.matcher(line);
+
+                if(paramValue!=null){
+                    line = matcher.replaceFirst(paramValue.toString());
+                    matcher = pattern.matcher(line);
+                }
             }
             sb.append(line);
         }

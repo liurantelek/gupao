@@ -12,4 +12,5 @@ import com.lr.framework.annotion.LrService;
  */
 
 public interface TestService {
+    String testService(String name, String addr);
 }
