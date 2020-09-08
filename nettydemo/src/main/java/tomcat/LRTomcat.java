@@ -29,6 +29,11 @@ public class LRTomcat {
      * 6、调用实例化的对象的server方法，执行具体的方法doGet（）和doPost方法
      */
 
+    public static void main(String[] args) {
+        LRTomcat tomcat = new LRTomcat();
+        tomcat.start();
+    }
+
     private int port = 8080;
 
     private ServerSocket server;
@@ -38,7 +43,7 @@ public class LRTomcat {
     private Properties webXml = new Properties ();
 
     private void init() {
-        String path = this.getClass ().getClassLoader ().getResource ("/").getPath ();
+        String path = this.getClass().getResource ("/").getPath ();
         try {
             FileInputStream fileInputStream = new FileInputStream (path + "web.properties");
             try {
@@ -46,7 +51,7 @@ public class LRTomcat {
 
                 for (Object k : webXml.keySet ()) {
                     String key = k.toString ();
-                    if (key.startsWith (".url")) {
+                    if (key.endsWith (".url")) {
                         String servletName = key.replaceAll ("\\.url$", "");
                         String url = webXml.getProperty (key);
                         String className = webXml.getProperty (servletName + ".className");
@@ -63,7 +68,8 @@ public class LRTomcat {
         }
     }
 
-    public void start(){
+    public  void  start(){
+        init();
         try {
             server = new ServerSocket (this.port);
             while (true){
@@ -84,6 +90,10 @@ public class LRTomcat {
             LRRequest request =  new LRRequest (inputStream);
             LRResponse response = new LRResponse (outputStream);
             String url = request.getURL();
+            if(servletMapping.get(url)!=null){
+                LRServlet servlet = servletMapping.get(url);
+                servlet.service(request,response);
+            }
         } catch (Exception e) {
             e.printStackTrace ();
         }

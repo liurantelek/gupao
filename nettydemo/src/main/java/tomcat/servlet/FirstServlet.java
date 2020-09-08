@@ -16,10 +16,12 @@ public class FirstServlet extends LRServlet {
         doPost (request,response);
     }
 
+    @Override
     public void doGet(LRRequest request, LRResponse response) {
         this.doPost (request,response);
     }
 
+    @Override
     public void doPost(LRRequest request, LRResponse response) {
         response.write("s");
     }
