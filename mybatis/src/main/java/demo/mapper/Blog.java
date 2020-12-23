@@ -13,4 +13,15 @@ import lombok.Data;
 @Data
 public class Blog {
     private long id;
+    private String text;
+    private String username;
+
+    @Override
+    public String toString() {
+        return "Blog{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

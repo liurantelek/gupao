@@ -27,7 +27,8 @@ import java.io.InputStream;
  */
 public class MySqlSessionFactory {
 
-    private static final String MYBATIS_CONFIG_URL="mybatis/example/mybatis-config.xml";
+//    private static final String MYBATIS_CONFIG_URL="mybatis/example/mybatis-config.xml";
+    private static final String MYBATIS_CONFIG_URL="SqlMapConfig.xml";
 
     /**
      * 获取sqlSessionFactory

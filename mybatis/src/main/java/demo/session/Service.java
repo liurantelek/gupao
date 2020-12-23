@@ -4,6 +4,9 @@ import demo.MySqlSessionFactory;
 import demo.mapper.Blog;
 import demo.mapper.BlogMapper;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @version v1.0
  * @ProjectName: gupao
@@ -14,9 +17,19 @@ import demo.mapper.BlogMapper;
  */
 public class Service {
 
-    public String test(){
+
+    public static void main(String[] args) {
+        test();
+    }
+
+    public static String test(){
         BlogMapper mapper = MySqlSessionFactory.getMapper(BlogMapper.class);
-        Blog blog = mapper.selectBlog(101);
-        return blog.toString();
+        Blog blogaaa = mapper.selectBlog("1");
+        System.out.println(blogaaa.toString());
+//        boolean b = mapper.deleteBolg("1");
+//        List<Blog> blogaaa = mapper.selectBlogAll();
+//        System.out.println(blogaaa.toString());
+//        return blogaaa.toString();
+        return null;
     }
 }

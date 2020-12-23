@@ -1,5 +1,8 @@
 package demo.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @version v1.0
  * @ProjectName: gupao
@@ -11,6 +14,9 @@ package demo.test;
 
 public class Test {
     public static void main(String[] args) {
-
+        List<String> listg = new ArrayList<String>();
+        for(String l : listg){
+            System.out.println(l);
+        }
     }
 }

@@ -2,23 +2,23 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.mybatis.example.BlogMapper">
+<mapper namespace="demo.mapper.BlogMapper">
 
     <!--#是预编译，$不是-->
-    <select id="selectBlog" parameterType="int" resultType="Blog">
-    select * from Blog where id = #{id}
+    <select id="selectBlog" parameterType="String" resultMap="blogResultMap" >
+    select * from blog where blog_id = #{id}
   </select>
 
     <insert id="insertBlog">
-        inseret into blog (id)  values(#{id})
+        inseret into blog (blog_id)  values(#{id})
     </insert>
 
     <update id="updateBlog">
-        update blog set id = #{id} where id = #{id}
+        update blog set id = #{blog_id} where id = #{id}
     </update>
 
-    <delete id="deleteBolg">
-        delete from blog where id=#{id}
+    <delete id="deleteBolg" >
+        delete from blog where blog_id=#{id}
     </delete>
 
     <insert id="insertMulti">
@@ -34,38 +34,38 @@
         <result property="username" column="blog_username"></result>
     </resultMap>
 
-    <select id="selectBlog" resultMap="blogResultMap">
+    <select id="selectBlogAll" resultMap="blogResultMap">
         select * from blog
     </select>
 
 
-    <!-- 非常复杂的结果映射 -->
-    <resultMap id="detailedBlogResultMap" type="Blog">
-        <constructor>
-            <idArg column="blog_id" javaType="int"/>
-        </constructor>
-        <result property="title" column="blog_title"/>
-        <association property="author" javaType="Author">
-            <id property="id" column="author_id"/>
-            <result property="username" column="author_username"/>
-            <result property="password" column="author_password"/>
-            <result property="email" column="author_email"/>
-            <result property="bio" column="author_bio"/>
-            <result property="favouriteSection" column="author_favourite_section"/>
-        </association>
-        <collection property="posts" ofType="Post">
-            <id property="id" column="post_id"/>
-            <result property="subject" column="post_subject"/>
-            <association property="author" javaType="Author"/>
-            <collection property="comments" ofType="Comment">
-                <id property="id" column="comment_id"/>
-            </collection>
-            <collection property="tags" ofType="Tag" >
-                <id property="id" column="tag_id"/>
-            </collection>
-            <discriminator javaType="int" column="draft">
-                <case value="1" resultType="DraftPost"/>
-            </discriminator>
-        </collection>
-    </resultMap>
+    <!--&lt;!&ndash; 非常复杂的结果映射 &ndash;&gt;-->
+    <!--<resultMap id="detailedBlogResultMap" type="Blog">-->
+        <!--<constructor>-->
+            <!--<idArg column="blog_id" javaType="int"/>-->
+        <!--</constructor>-->
+        <!--<result property="title" column="blog_title"/>-->
+        <!--<association property="author" javaType="Author">-->
+            <!--<id property="id" column="author_id"/>-->
+            <!--<result property="username" column="author_username"/>-->
+            <!--<result property="password" column="author_password"/>-->
+            <!--<result property="email" column="author_email"/>-->
+            <!--<result property="bio" column="author_bio"/>-->
+            <!--<result property="favouriteSection" column="author_favourite_section"/>-->
+        <!--</association>-->
+        <!--<collection property="posts" ofType="Post">-->
+            <!--<id property="id" column="post_id"/>-->
+            <!--<result property="subject" column="post_subject"/>-->
+            <!--<association property="author" javaType="Author"/>-->
+            <!--<collection property="comments" ofType="Comment">-->
+                <!--<id property="id" column="comment_id"/>-->
+            <!--</collection>-->
+            <!--<collection property="tags" ofType="Tag" >-->
+                <!--<id property="id" column="tag_id"/>-->
+            <!--</collection>-->
+            <!--<discriminator javaType="int" column="draft">-->
+                <!--<case value="1" resultType="DraftPost"/>-->
+            <!--</discriminator>-->
+        <!--</collection>-->
+    <!--</resultMap>-->
 </mapper>

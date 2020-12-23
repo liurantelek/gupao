@@ -2,6 +2,9 @@ package demo.mapper;
 
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @version v1.0
  * @ProjectName: gupao
@@ -12,6 +15,12 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface BlogMapper {
 
-    @Select("select * from blog where id=#{id}")
-    Blog selectBlog(int id);
+//    @Select("select * from blog where id=#{id}")
+    Blog selectBlog(String id);
+
+    List<Blog> selectBlogAll();
+
+    List<Blog> selectBlogAllsss();
+
+    boolean deleteBolg(String id);
 }
